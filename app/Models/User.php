@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -55,7 +56,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Course::class, 'course_students');
     }
-    public function subscribe_trnsactions(): HasMany
+    public function subscribe_transactions(): HasMany
     {
         return $this->hasMany(SubscribeTransaction::class);
     }
@@ -63,6 +64,17 @@ class User extends Authenticatable
     public function hasActiveSubscription()
     {
         $latestSubscription = $this->subscribe_transactions()
-        ->where('is_admin')->latest
+        ->where('is_paid', true)
+        ->latest('updated_at')
+        ->first();
+
+        if(!$latestSubscription)
+        {
+            return false;
+        }
+
+        $subscriptionEndDate = Carbon::parse($latestSubscription->subscription_start_date)->addMonths(1);
+        return Carbon::now()->lessThanOrEqualTo($subscriptionEndDate);
+
     }
 }
