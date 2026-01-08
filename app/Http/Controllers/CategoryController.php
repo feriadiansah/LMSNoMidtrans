@@ -36,7 +36,7 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request)
     {
         DB::transaction(function () use ($request) {
-            
+
             $validated = $request->validated();
 
             if ($request->hasFile('icon')) {
@@ -50,6 +50,8 @@ class CategoryController extends Controller
 
             $category = Category::create($validated);
         });
+
+        //route di controller ini juga menggunakan alias route yang ada di web.php
         return redirect()->route('admin.categories.index');
     }
 
